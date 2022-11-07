@@ -60,7 +60,7 @@ public class ArmEncoderCrap extends LinearOpMode {
     }
 
     public void Rotate(double power, int distance) {
-        rotation.setMode(DcMotor.RunMode.RESET_ENCODERS);
+        rotation.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODERS);
 
         rotation.setTargetPosition(distance);
 
