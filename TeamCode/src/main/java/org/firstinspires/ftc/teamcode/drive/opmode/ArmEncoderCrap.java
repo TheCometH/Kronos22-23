@@ -30,7 +30,7 @@ public class ArmEncoderCrap extends LinearOpMode {
     DcMotorEx traverse;
     Servo tilt;
     Servo clamp;
-
+    
     @Override
     public void runOpMode() throws InterruptedException {
         expansion = hardwareMap.get(DcMotorEx.class, "expansion");
@@ -50,7 +50,20 @@ public class ArmEncoderCrap extends LinearOpMode {
         rotation.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         traverse.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         
+        // trajectory to tall pole (theoretically)
+        
+        Trajectory traj1 = drive.trajectoryBuilder(new Pose2d(12, 46.6666666666))
+                .splineTo(new Vector2d(12, 72), 0)
+                .addDisplacementMarker( () -> {
+                    Rotate(0.5, 720);
+                    Expansion(0.1, 2880);
+                    Stop();
+             })
+                .splineTo(new Vector2d(48, 72), Math.toRadians(90))
+                .build();
         waitForStart();
+        if(isStopRequested()) return;
+        drive.followTrajectory(traj1);
     }
 
     public void Stop() {
