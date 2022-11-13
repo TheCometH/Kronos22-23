@@ -55,8 +55,8 @@ public class ArmEncoderCrap extends LinearOpMode {
         Trajectory traj1 = drive.trajectoryBuilder(new Pose2d(12, 46.6666666666))
                 .splineTo(new Vector2d(12, 72), 0)
                 .addDisplacementMarker( () -> {
-                    // estimations on 135 deg to roate it to the right height 
-                    Rotate(0.5, 540);
+                    // estimations on 90 deg to roate it to the right height 
+                    Rotate(0.5, 360);
                     // change the distance to however much the expansion needs
                     Expansion(0.1, 2880);
                     Stop();
