@@ -59,7 +59,7 @@ public class ArmEncoderCrap extends LinearOpMode {
                     Expansion(0.1, 2880);
                     Stop();
              })
-                .splineTo(new Vector2d(48, 72), Math.toRadians(90))
+                .splineTo(new Vector2d(48, 72), Math.toRadians(135))
                 .build();
         waitForStart();
         if(isStopRequested()) return;
