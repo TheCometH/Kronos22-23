@@ -344,6 +344,8 @@ public class SampleMecanumDrive extends MecanumDrive {
         traverse.setPower(0);
     }
 
+
+
     public void rotate(double power, int distance) {
         rotation.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
@@ -361,6 +363,10 @@ public class SampleMecanumDrive extends MecanumDrive {
         rotation.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
     }
 
+    public void rotate(double power){
+        rotation.setPower(power);
+    }
+
     public void expand(double power, int distance) {
         expansion.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
@@ -376,6 +382,10 @@ public class SampleMecanumDrive extends MecanumDrive {
 
         stopArmMovement();
         expansion.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+    }
+    public void expand(double power){
+        expansion.setPower(power);
+
     }
 
     public void traversing(double power, int distance) {
@@ -400,9 +410,36 @@ public class SampleMecanumDrive extends MecanumDrive {
 
     public void closeClaw(double distance) {
         clamp.setPosition(distance);
+
     }
 
     public void openClaw() {
         clamp.setPosition(0);
     }
+
+    public void traversing(double power) {
+        traverse.setPower(power);
+    }
+
+    public void move(double power){
+
+        rightFront.setPower(power);
+        rightRear.setPower(power);
+        leftRear.setPower(power);
+        leftFront.setPower(power);
+
+    }
+    public void sides(double power){
+        rightFront.setPower(-power);
+        leftRear.setPower(power);
+        rightRear.setPower(power);
+        leftFront.setPower(-power);
+    }
+    public void turning(double power){
+        rightFront.setPower(power);
+        rightRear.setPower(power);
+        leftFront.setPower(-power);
+        leftRear.setPower(-power);
+    }
+
 }
