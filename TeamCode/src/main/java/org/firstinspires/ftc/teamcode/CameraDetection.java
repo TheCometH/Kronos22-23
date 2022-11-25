@@ -44,10 +44,13 @@ public class CameraDetection extends LinearOpMode
     // UNITS ARE PIXELS
     // NOTE: this calibration is for the C920 webcam at 800x448.
     // You will need to do your own calibration for other configurations!
-    double fx = 800*4;
-    double fy = 448*4;
-    double cx = 0.5*fx;
-    double cy = 0.5*fy;
+    double fx = 20*320;
+    double fy = 20*240;
+    double cx = 402.145;
+    double cy = 221.506;
+
+    // Parking Place
+    int place = 0;
 
     // UNITS ARE METERS
     double tagsize = 0.166;
@@ -72,7 +75,7 @@ public class CameraDetection extends LinearOpMode
             @Override
             public void onOpened()
             {
-                camera.startStreaming(800,448, OpenCvCameraRotation.UPRIGHT);
+                camera.startStreaming(320,240, OpenCvCameraRotation.UPRIGHT);
             }
 
             @Override
@@ -166,15 +169,19 @@ public class CameraDetection extends LinearOpMode
         }
 
         /* Actually do something useful */
-        if (tagOfInterest.id == left) {
-            // left code
-
-        }
-        else if (tagOfInterest == null || tagOfInterest.id == middle) {
-            // middle code
-        }
-        else if (tagOfInterest.id == right) {
-            // right code
+        if (tagOfInterest != null) {
+            if (tagOfInterest.id == left) {
+                // left code
+                place = 1;
+            }
+            else if (tagOfInterest.id == middle) {
+                // middle code
+                place = 2;
+            }
+            else if (tagOfInterest.id == right) {
+                // right code
+                place = 3;
+            }
         }
 
 
