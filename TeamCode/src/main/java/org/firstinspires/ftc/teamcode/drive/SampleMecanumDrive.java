@@ -24,6 +24,7 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.PIDFCoefficients;
+import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
 import com.qualcomm.robotcore.hardware.configuration.typecontainers.MotorConfigurationType;
 
@@ -71,6 +72,9 @@ public class SampleMecanumDrive extends MecanumDrive {
 
     private DcMotorEx leftFront, leftRear, rightRear, rightFront;
     private List<DcMotorEx> motors;
+
+    private DcMotorEx expansion, traverse, rotation;
+    private Servo tilt, clamp;
 
     private BNO055IMU imu;
     private VoltageSensor batteryVoltageSensor;
@@ -124,6 +128,12 @@ public class SampleMecanumDrive extends MecanumDrive {
 
         motors = Arrays.asList(leftFront, leftRear, rightRear, rightFront);
 
+        expansion = hardwareMap.get(DcMotorEx.class, "expansion");
+        traverse = hardwareMap.get(DcMotorEx.class, "traverse");
+        rotation = hardwareMap.get(DcMotorEx.class, "rotation");
+        tilt = hardwareMap.get(Servo.class, "tilt");
+        clamp = hardwareMap.get(Servo.class, "clamp");
+
         for (DcMotorEx motor : motors) {
             MotorConfigurationType motorConfigurationType = motor.getMotorType().clone();
             motorConfigurationType.setAchieveableMaxRPMFraction(1.0);
@@ -146,6 +156,11 @@ public class SampleMecanumDrive extends MecanumDrive {
         rightFront.setDirection(DcMotorSimple.Direction.REVERSE);
         rightRear.setDirection(DcMotorSimple.Direction.REVERSE);
 
+        expansion.setDirection(DcMotorSimple.Direction.FORWARD);
+        rotation.setDirection(DcMotorSimple.Direction.FORWARD);
+        traverse.setDirection(DcMotorSimple.Direction.FORWARD);
+        tilt.setDirection(Servo.Direction.FORWARD);
+        clamp.setDirection(Servo.Direction.FORWARD);
         // TODO: if desired, use setLocalizer() to change the localization method
         // for instance, setLocalizer(new ThreeTrackingWheelLocalizer(...));
 
@@ -320,5 +335,74 @@ public class SampleMecanumDrive extends MecanumDrive {
 
     public static TrajectoryAccelerationConstraint getAccelerationConstraint(double maxAccel) {
         return new ProfileAccelerationConstraint(maxAccel);
+    }
+
+    //Arm Code
+    public void stopArmMovement() {
+        expansion.setPower(0);
+        rotation.setPower(0);
+        traverse.setPower(0);
+    }
+
+    public void rotate(double power, int distance) {
+        rotation.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
+        rotation.setTargetPosition(distance);
+
+        rotation.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+        rotation.setPower(power);
+
+        while (rotation.isBusy()) {
+
+        }
+
+        stopArmMovement();
+        rotation.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+    }
+
+    public void expand(double power, int distance) {
+        expansion.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
+        expansion.setTargetPosition(distance);
+
+        expansion.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+        expansion.setPower(power);
+
+        while (expansion.isBusy()) {
+
+        }
+
+        stopArmMovement();
+        expansion.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+    }
+
+    public void traversing(double power, int distance) {
+        traverse.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
+        traverse.setTargetPosition(distance);
+
+        traverse.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+        traverse.setPower(power);
+        while (traverse.isBusy()) {
+
+        }
+
+        stopArmMovement();
+        traverse.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+    }
+
+    public void tiltNow(double distance) {
+        tilt.setPosition(distance);
+    }
+
+    public void closeClaw(double distance) {
+        clamp.setPosition(distance);
+    }
+
+    public void openClaw() {
+        clamp.setPosition(0);
     }
 }
