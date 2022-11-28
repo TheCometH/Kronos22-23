@@ -44,10 +44,13 @@ public class CameraDetection extends LinearOpMode
     // UNITS ARE PIXELS
     // NOTE: this calibration is for the C920 webcam at 800x448.
     // You will need to do your own calibration for other configurations!
-    double fx = 800*4;
-    double fy = 448*4;
-    double cx = 0.5*fx;
-    double cy = 0.5*fy;
+    double fx = 20*320;
+    double fy = 20*240;
+    double cx = 402.145;
+    double cy = 221.506;
+
+    // Parking Place
+    int place = 0;
 
     // UNITS ARE METERS
     double tagsize = 0.166;
@@ -62,6 +65,33 @@ public class CameraDetection extends LinearOpMode
     @Override
     public void runOpMode()
     {
+        initCamera();
+
+        /*
+         * The INIT-loop:
+         * This REPLACES waitForStart!
+         */
+        while (!isStarted() && !isStopRequested())
+        {
+            detect();
+        /*
+         * The START command just came in: now work off the latest snapshot acquired
+         * during the init loop.
+         */
+
+        /* Update the telemetry */
+            update();
+
+        /* Actually do something useful */
+            check();
+
+
+        /* You wouldn't have this in your autonomous, this is just to prevent the sample from ending */
+        while (opModeIsActive()) {sleep(20);}
+        }
+    }
+
+    private void initCamera() {
         int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
         camera = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Webcam 1"), cameraMonitorViewId);
         aprilTagDetectionPipeline = new DetectionPipeline(tagsize, fx, fy, cx, cy);
@@ -72,7 +102,7 @@ public class CameraDetection extends LinearOpMode
             @Override
             public void onOpened()
             {
-                camera.startStreaming(800,448, OpenCvCameraRotation.UPRIGHT);
+                camera.startStreaming(160,120, OpenCvCameraRotation.UPRIGHT);
             }
 
             @Override
@@ -83,49 +113,29 @@ public class CameraDetection extends LinearOpMode
         });
 
         telemetry.setMsTransmissionInterval(50);
+    }
 
-        /*
-         * The INIT-loop:
-         * This REPLACES waitForStart!
-         */
-        while (!isStarted() && !isStopRequested())
+    private void detect() {
+        ArrayList<AprilTagDetection> currentDetections = aprilTagDetectionPipeline.getLatestDetections();
+
+        if(currentDetections.size() != 0)
         {
-            ArrayList<AprilTagDetection> currentDetections = aprilTagDetectionPipeline.getLatestDetections();
+            boolean tagFound = false;
 
-            if(currentDetections.size() != 0)
+            for(AprilTagDetection tag : currentDetections)
             {
-                boolean tagFound = false;
-
-                for(AprilTagDetection tag : currentDetections)
+                if(tag.id == left || tag.id == middle || tag.id == right)
                 {
-                    if(tag.id == left || tag.id == middle || tag.id == right)
-                    {
-                        tagOfInterest = tag;
-                        tagFound = true;
-                        break;
-                    }
+                    tagOfInterest = tag;
+                    tagFound = true;
+                    break;
                 }
+            }
 
-                if(tagFound)
-                {
-                    telemetry.addLine("Tag of interest is in sight!\n\nLocation data:");
-                    tagToTelemetry(tagOfInterest);
-                }
-                else
-                {
-                    telemetry.addLine("Don't see tag of interest :(");
-
-                    if(tagOfInterest == null)
-                    {
-                        telemetry.addLine("(The tag has never been seen)");
-                    }
-                    else
-                    {
-                        telemetry.addLine("\nBut we HAVE seen the tag before; last seen at:");
-                        tagToTelemetry(tagOfInterest);
-                    }
-                }
-
+            if(tagFound)
+            {
+                telemetry.addLine("Tag of interest is in sight!\n\nLocation data:");
+                tagToTelemetry(tagOfInterest);
             }
             else
             {
@@ -140,46 +150,27 @@ public class CameraDetection extends LinearOpMode
                     telemetry.addLine("\nBut we HAVE seen the tag before; last seen at:");
                     tagToTelemetry(tagOfInterest);
                 }
-
             }
 
-            telemetry.update();
-            sleep(20);
-        }
-
-        /*
-         * The START command just came in: now work off the latest snapshot acquired
-         * during the init loop.
-         */
-
-        /* Update the telemetry */
-        if(tagOfInterest != null)
-        {
-            telemetry.addLine("Tag snapshot:\n");
-            tagToTelemetry(tagOfInterest);
-            telemetry.update();
         }
         else
         {
-            telemetry.addLine("No tag snapshot available, it was never sighted during the init loop :(");
-            telemetry.update();
+            telemetry.addLine("Don't see tag of interest :(");
+
+            if(tagOfInterest == null)
+            {
+                telemetry.addLine("(The tag has never been seen)");
+            }
+            else
+            {
+                telemetry.addLine("\nBut we HAVE seen the tag before; last seen at:");
+                tagToTelemetry(tagOfInterest);
+            }
+
         }
 
-        /* Actually do something useful */
-        if (tagOfInterest.id == left) {
-            // left code
-
-        }
-        else if (tagOfInterest == null || tagOfInterest.id == middle) {
-            // middle code
-        }
-        else if (tagOfInterest.id == right) {
-            // right code
-        }
-
-
-        /* You wouldn't have this in your autonomous, this is just to prevent the sample from ending */
-        while (opModeIsActive()) {sleep(20);}
+        telemetry.update();
+        sleep(20);
     }
 
     void tagToTelemetry(AprilTagDetection detection)
@@ -191,5 +182,39 @@ public class CameraDetection extends LinearOpMode
         telemetry.addLine(String.format("Rotation Yaw: %.2f degrees", Math.toDegrees(detection.pose.yaw)));
         telemetry.addLine(String.format("Rotation Pitch: %.2f degrees", Math.toDegrees(detection.pose.pitch)));
         telemetry.addLine(String.format("Rotation Roll: %.2f degrees", Math.toDegrees(detection.pose.roll)));
+    }
+
+    private void update() {
+        if(tagOfInterest != null)
+        {
+            telemetry.addLine("Tag snapshot:\n");
+            tagToTelemetry(tagOfInterest);
+            telemetry.update();
+        }
+        else
+        {
+            telemetry.addLine("No tag snapshot available, it was never sighted during the init loop :(");
+            telemetry.update();
+        }
+    }
+
+    private void check() {
+        if (tagOfInterest != null) {
+            if (tagOfInterest.id == left) {
+                // left code
+                place = 1;
+            }
+            else if (tagOfInterest.id == middle) {
+                // middle code
+                place = 2;
+            }
+            else if (tagOfInterest.id == right) {
+                // right code
+                place = 3;
+            }
+            else {
+                place = 0;
+            }
+        }
     }
 }
